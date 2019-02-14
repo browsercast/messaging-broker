@@ -1,7 +1,7 @@
 const server = require('http').createServer();
 var io = require('socket.io')(server, { origins: '*:*'});
 const handles = require('./handles');
-const { peers } = require('./db');
+const { peers, uids } = require('./db');
 
 io.origins('*:*')
 
@@ -22,6 +22,20 @@ io.on('connection', (socket) => {
             // send to extension
             extId = data.id;
             socket.emit('join', data.id);
+        }
+    });
+
+    // save uid
+    socket.on('joined-id-social', (data) => {
+        handles.newUid(data);
+    });
+
+    // check uid and return socket
+    socket.on('joined-id-social-check', (data) => {
+        console.log(data);
+        const uid = uids.getById(data);
+        if (rec) {
+            io.to(rec.socketId).emit('user-disconnected');
         }
     });
 
@@ -49,6 +63,7 @@ io.on('connection', (socket) => {
                 io.to(rec.socketId).emit('user-disconnected');
             }
             handles.deletePeer(socket.id);
+            // ToDo delete uid
         }
     });
 });

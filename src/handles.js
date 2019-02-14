@@ -1,4 +1,4 @@
-const { db, peers } = require('./db');
+const { db, peers, uids } = require('./db');
 const handles = {
     newPeer: (socketId) => {
         const peer = peers
@@ -10,6 +10,17 @@ const handles = {
     },
     deletePeer: (socketId) => {
         peers.remove({ socketId }).write();
+    },
+    newUid: (uid) => {
+        const entry = uids
+            .insert({
+                uid
+            })
+            .write();
+        return entry.id;
+    },
+    deleteUid: (uid) => {
+        uids.remove({ uid }).write();
     }
 };
 module.exports = handles;
