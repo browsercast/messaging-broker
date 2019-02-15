@@ -1,7 +1,7 @@
 const server = require('http').createServer();
 var io = require('socket.io')(server, { origins: '*:*'});
 const handles = require('./handles');
-const { peers } = require('./db');
+const { peers, uids } = require('./db');
 
 io.origins('*:*')
 
@@ -22,6 +22,25 @@ io.on('connection', (socket) => {
             // send to extension
             extId = data.id;
             socket.emit('join', data.id);
+        }
+    });
+
+    // save uid
+    socket.on('joined-id-social', (data) => {
+        console.log("add new uid", data, appId)
+        handles.newUid(data, appId);
+    });
+
+    // check uid and return socket
+    socket.on('joined-id-social-check', (data) => {
+        const uid = handles.getUidSocket(data);
+
+        if (uid) {
+            console.log("uid exists !", uid)
+            const id = uid.peerId;
+            console.log("peer id", id)
+            socket.emit('peer-id-social', id);
+            
         }
     });
 

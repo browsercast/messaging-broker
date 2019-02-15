@@ -7,6 +7,9 @@ const db = low(adapter);
 db._.mixin(lodashId);
 
 db.defaults({ peers: [] }).write();
-const peers = db.get('peers');
+db.defaults({ uids: [] }).write();
 
-module.exports = { db, peers };
+const peers = db.get('peers');
+const uids = db.get('uids');
+
+module.exports = { db, peers, uids };
