@@ -27,15 +27,20 @@ io.on('connection', (socket) => {
 
     // save uid
     socket.on('joined-id-social', (data) => {
-        handles.newUid(data);
+        console.log("add new uid", data, appId)
+        handles.newUid(data, appId);
     });
 
     // check uid and return socket
     socket.on('joined-id-social-check', (data) => {
-        console.log(data);
-        const uid = uids.getById(data);
-        if (rec) {
-            io.to(rec.socketId).emit('user-disconnected');
+        const uid = handles.getUidSocket(data);
+
+        if (uid) {
+            console.log("uid exists !", uid)
+            const id = uid.peerId;
+            console.log("peer id", id)
+            socket.emit('peer-id-social', id);
+            
         }
     });
 
@@ -63,7 +68,6 @@ io.on('connection', (socket) => {
                 io.to(rec.socketId).emit('user-disconnected');
             }
             handles.deletePeer(socket.id);
-            // ToDo delete uid
         }
     });
 });
