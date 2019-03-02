@@ -6,8 +6,11 @@ const { peers, uids } = require('./db');
 io.origins('*:*')
 
 io.on('connection', (socket) => {
-    const appId = handles.newPeer(socket.id);
+    var appId = false;
     var extId = false;
+    var uid = false;
+
+    appId = handles.newPeer(socket.id);
 
     // send host peer id
     socket.emit('peer-id', appId);
@@ -17,7 +20,7 @@ io.on('connection', (socket) => {
         const rec = peers.getById(data.id).value();
         if (rec) {
             // send to app
-            io.to(rec.socketId).emit('join', appId);
+            io.to(rec.socketId).emit('join', appId); 
 
             // send to extension
             extId = data.id;
@@ -27,21 +30,14 @@ io.on('connection', (socket) => {
 
     // save uid
     socket.on('joined-id-social', (data) => {
-        console.log("add new uid", data, appId)
-        handles.newUid(data, appId);
+        uid = data;
+        handles.newUid(data, appId, socket.handshake.query.host);
+        sendDevices(uid);
     });
 
     // check uid and return socket
     socket.on('joined-id-social-check', (data) => {
-        const uid = handles.getUidSocket(data);
-
-        if (uid) {
-            console.log("uid exists !", uid)
-            const id = uid.peerId;
-            console.log("peer id", id)
-            socket.emit('peer-id-social', id);
-            
-        }
+        sendDevices(data);
     });
 
     // for host, new id joined
@@ -62,14 +58,30 @@ io.on('connection', (socket) => {
 
     // user disconnected
     socket.on('disconnect', () => {
+        if (uid != false) {
+            handles.deletePeer(uid, appId);
+        }
+
         if (extId != false) {
             const rec = peers.getById(extId).value();
+
             if (rec) {
                 io.to(rec.socketId).emit('user-disconnected');
             }
             handles.deletePeer(socket.id);
         }
+
+        sendDevices(uid);
     });
 });
+
+function sendDevices(id) {
+    const uid = handles.getUidSocket(id);
+
+    if (uid) {
+        const ids = uid.peers;
+        io.emit('peer-id-social', ids);
+    }
+}
 
 server.listen(process.env.PORT || 3000);
