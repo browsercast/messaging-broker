@@ -1,0 +1,22 @@
+{
+  "addons": [
+
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ],
+  "description": "for heroku integration with github review, pull requests..",
+  "env": {
+  },
+  "formation": {
+    "web": {
+      "quantity": 1
+    }
+  },
+  "name": "heroku-messaging-broker-app",
+  "scripts": {
+  },
+  "stack": "heroku-18"
+}
